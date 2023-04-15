@@ -1,0 +1,136 @@
+﻿@page "/recipeform"
+
+<h3>Record a Recipe</h3>
+
+<EditForm Model="@recipe" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="title">Recipe Title:</label>
+        <InputText id="title" @bind-Value="recipe.Title" class="form-control" />
+    </div>
+
+    <div class="form-row">
+        <div class="form-group col-md-4">
+            <label for="rating">Rating (1-5):</label>
+            <InputNumber id="rating" @bind-Value="recipe.Rating" class="form-control" min="1" max="5" />
+        </div>
+        <div class="form-group col-md-4">
+            <label for="servings">Servings (1-100):</label>
+            <InputNumber id="servings" @bind-Value="recipe.Servings" class="form-control" min="1" max="100" />
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group col-md-4">
+            <label for="prepTime">Prep Time (minutes):</label>
+            <InputNumber id="prepTime" @bind-Value="recipe.PrepTime" class="form-control" />
+        </div>
+        <div class="form-group col-md-4">
+            <label for="cookTime">Cook Time (minutes):</label>
+            <InputNumber id="cookTime" @bind-Value="recipe.CookTime" class="form-control" />
+        </div>
+        <div class="form-group col-md-4">
+            <label for="totalTime">Total Time (minutes):</label>
+            <input id="totalTime" value="@recipe.TotalTime" readonly class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="difficulty">Difficulty:</label>
+        <InputSelect id="difficulty" @bind-Value="recipe.Difficulty" class="form-control">
+            <option value="easy">Easy</option>
+            <option value="not bad">Not bad</option>
+            <option value="ok now">Am I getting paid?</option>
+        </InputSelect>
+    </div>
+
+    <div class="form-group">
+        <button @onclick="ToggleCollapse" class="btn btn-link text-decoration-none">
+            <span class="@(isCollapsed ? "oi oi-plus" : "oi oi-minus")"></span>
+            Nutrition
+        </button>
+
+        <div class="collapse @(isCollapsed ? "" : "show")">
+            <div class="form-group">
+                <label for="nutrition">Nutrition:</label>
+                <InputTextArea id="nutrition" @bind-Value="recipe.Nutrition" class="form-control" rows="5" />
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <h5>Ingredients:</h5>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ingredient</th>
+                    <th>Amount</th>
+                    <th>Unit</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ingredient in recipe.Ingredients.Cast<Ingredient>())
+                {
+                    <tr>
+                        <td><input @bind="ingredient.Name" class="form-control" /></td>
+                        <td><input type="number" step="0.01" @bind="ingredient.Amount" class="form-control" /></td>
+                        <td>
+                            <InputSelect @bind-Value="ingredient.Unit" class="form-control">
+                                @foreach (var unit in Ingredient.CommonUnits)
+                                {
+                                    <option value="@unit">@unit</option>
+                                }
+                            </InputSelect>
+                        </td>
+                        <td><button type="button" @onclick="() => RemoveIngredient(ingredient)" class="btn btn-secondary">Remove</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button type="button" @onclick="AddNewIngredient" class="btn btn-secondary">Add New Ingredient</button>
+
+    </div>
+
+
+<div class="form-group">
+    <label for="instructions">Instructions:</label>
+    <InputTextArea id="instructions" @bind-Value="recipe.Instructions" class="form-control" rows="5" />
+</div>
+
+<div class="form-group">
+    <label for="notes">Notes:</label>
+    <InputTextArea id="notes" @bind-Value="recipe.Notes" class="form-control" rows="5" />
+</div>
+<br />
+<button type="submit" class="btn btn-primary">Save Recipe</button>
+</EditForm>
+
+<p>@message</p>
+
+@code {
+    private Recipe recipe = new Recipe();
+    private string message = "";
+    private bool isCollapsed = true;
+
+    private void AddNewIngredient()
+    {
+        recipe.Ingredients.Add(new Ingredient());
+    }
+
+      private void RemoveIngredient(Ingredient ingredient)
+    {
+        recipe.Ingredients.Remove(ingredient);
+    }
+
+    private void ToggleCollapse() => isCollapsed = !isCollapsed;
+
+    private void HandleValidSubmit()
+    {
+        message = $"Recipe saved: {recipe.Title}";
+        // Save the recipe to a database or other data storage
+    }
+}
+
